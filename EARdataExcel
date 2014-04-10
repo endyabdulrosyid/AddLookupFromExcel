@@ -1,0 +1,381 @@
+package ltc.tsel.getdatafromexcel;
+
+
+//import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+//import org.apache.poi.openxml4j.opc.OPCPackage;
+//import org.apache.poi.ss.usermodel.Cell;
+//import org.apache.poi.ss.usermodel.Sheet;
+//import org.apache.poi.ss.usermodel.Workbook;
+//import org.apache.poi.xssf.usermodel.XSSFCell;
+//import org.apache.poi.xssf.usermodel.XSSFRow;
+//import org.apache.poi.xssf.usermodel.XSSFSheet;
+//import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+ 
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+ 
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+public class EARdataExcel {
+	 
+	/** Creates a new instance of POIExcelReader */
+	public EARdataExcel ()
+	{}
+	 
+	/**
+	* This method is used to display the Excel content to command line.
+	*
+	* @param xlsPath
+	*/
+	@SuppressWarnings ("unchecked")
+//	public void displayFromExcel (String xlsPath)
+//	{
+//		InputStream inputStream = null;
+//		 
+//		try
+//		{
+//			inputStream = new FileInputStream (xlsPath);
+//			System.out.println("inputStreem : "+inputStream);
+//		}
+//		catch (FileNotFoundException e)
+//		{
+//			System.out.println ("File not found in the specified path.");
+//			e.printStackTrace ();
+//		}
+//		 
+////		POIFSFileSystem fileSystem = null;
+////		OPCPackage fileSystem = null;
+//		 
+//		try
+//		{
+////			fileSystem = new POIFSFileSystem (inputStream);
+//			OPCPackage fileSystem = null;
+//			try {
+//				fileSystem = OPCPackage.open(xlsPath);
+//			} catch (InvalidFormatException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//			System.out.println("FileSystem"); 
+//			XSSFWorkbook workBook = new XSSFWorkbook(fileSystem);
+//			System.out.println("workBook"); 
+//			Sheet         sheet    = workBook.getSheetAt(0);
+////			Iterator<HSSFRow> rows     = sheet.rowIterator();
+//			Iterator rows     = sheet.rowIterator();
+//			
+//			while (rows.hasNext ())
+//			{
+//				System.out.println(rows);
+//				HSSFRow row = (HSSFRow) rows.next();
+//					 
+//				// display row number in the console.
+//				System.out.println ("Row No.: " + row.getRowNum ());
+//					 
+//				// once get a row its time to iterate through cells.
+////				Iterator<HSSFCell> cells = row.cellIterator();
+//				Iterator<Cell> cells = row.cellIterator();
+//				
+//				while (cells.hasNext ())
+//				{
+//					HSSFCell cell = (HSSFCell) cells.next();
+//					 
+//					System.out.println ("Cell No.: " + cell.getCellNum ());
+//					 
+//					/*
+//					 * Now we will get the cell type and display the values
+//					 * accordingly.
+//					 */
+//					switch (cell.getCellType ())
+//					{
+//						case HSSFCell.CELL_TYPE_NUMERIC :
+//						{
+//							// cell type numeric.
+//							System.out.println ("Numeric value: " + cell.getNumericCellValue ());
+//							break;
+//						}
+//					 
+//						case HSSFCell.CELL_TYPE_STRING :
+//						{
+//							// cell type string.
+//							HSSFRichTextString richTextString = cell.getRichStringCellValue ();
+//							System.out.println ("String value: " + richTextString.getString ());
+//							break;
+//						}
+//					 
+//						default :
+//						{
+//							// types other than String and Numeric.
+//							System.out.println ("Type not supported.");				 
+//							break;
+//						}
+//					}
+//				}
+//			}
+//		}
+//		catch (IOException e)
+//		{
+//			e.printStackTrace ();
+//		}
+//	}
+//	
+	
+	public static void readXLSFile() throws IOException
+	{
+		InputStream ExcelFileToRead = new FileInputStream("C:/Test.xls");
+		HSSFWorkbook wb = new HSSFWorkbook(ExcelFileToRead);
+ 
+		HSSFSheet sheet=wb.getSheetAt(0);
+		HSSFRow row; 
+		HSSFCell cell;
+ 
+		Iterator rows = sheet.rowIterator();
+ 
+		while (rows.hasNext())
+		{
+			row=(HSSFRow) rows.next();
+			Iterator cells = row.cellIterator();
+			
+			while (cells.hasNext())
+			{
+				cell=(HSSFCell) cells.next();
+		
+				if (cell.getCellType() == HSSFCell.CELL_TYPE_STRING)
+				{
+					System.out.print(cell.getStringCellValue()+" ");
+				}
+				else if(cell.getCellType() == HSSFCell.CELL_TYPE_NUMERIC)
+				{
+					System.out.print(cell.getNumericCellValue()+" ");
+				}
+				else
+				{
+					//U Can Handel Boolean, Formula, Errors
+				}
+			}
+			System.out.println();
+		}
+	
+	}
+	
+	public static void writeXLSFile() throws IOException {
+		
+		String excelFileName = "C:/Test.xls";//name of excel file
+ 
+		String sheetName = "Sheet1";//name of sheet
+ 
+		HSSFWorkbook wb = new HSSFWorkbook();
+		HSSFSheet sheet = wb.createSheet(sheetName) ;
+ 
+		//iterating r number of rows
+		for (int r=0;r < 5; r++ )
+		{
+			HSSFRow row = sheet.createRow(r);
+	
+			//iterating c number of columns
+			for (int c=0;c < 5; c++ )
+			{
+				HSSFCell cell = row.createCell(c);
+				
+				cell.setCellValue("Cell "+r+" "+c);
+			}
+		}
+		
+		FileOutputStream fileOut = new FileOutputStream(excelFileName);
+		
+		//write this workbook to an Outputstream.
+		wb.write(fileOut);
+		fileOut.flush();
+		fileOut.close();
+	}
+	
+	public HashMap[] readXLSXFileToHashMap(String strPath) throws IOException {
+		HashMap[] hash = null;
+		InputStream ExcelFileToRead = new FileInputStream(strPath);//"C:/Book1.xlsx");
+		XSSFWorkbook  wb = new XSSFWorkbook(ExcelFileToRead);
+		
+		XSSFWorkbook test = new XSSFWorkbook(); 
+		
+		XSSFSheet sheet = wb.getSheetAt(0);
+		XSSFRow row; 
+		XSSFCell cell;
+ 
+		Iterator rows = sheet.rowIterator();
+		int i = 0;
+		int x = 0;
+		String str;
+		
+		while (rows.hasNext())
+		{
+			System.out.println("i : "+i);
+			row=(XSSFRow) rows.next();
+			Iterator cells = row.cellIterator();
+				
+			x=1;
+			while (cells.hasNext())
+			{
+				cell=(XSSFCell) cells.next();
+				
+				if (cell.getCellType() == XSSFCell.CELL_TYPE_STRING)
+				{
+//					System.out.print(" "+ cell.getStringCellValue()+" ");
+//					System.out.print("            | ");
+					if(x == 1){
+						hash[i].put("ACT_KEY", cell.getStringCellValue());
+					}else{
+						hash[i].put("ACT_NAME", cell.getStringCellValue());
+					}
+				}
+				else if(cell.getCellType() == XSSFCell.CELL_TYPE_NUMERIC)
+				{
+					System.out.print(cell.getNumericCellValue()+" ");
+					if(x == 1){
+						hash[i].put("ACT_KEY", cell.getNumericCellValue());
+					}else{
+						hash[i].put("ACT_NAME", cell.getNumericCellValue());
+					}
+				}
+				else
+				{
+					//U Can Handel Boolean, Formula, Errors
+				}
+				x++;
+			}
+			System.out.println();
+			i++;
+		}
+	
+		return hash;
+	}
+	
+	public static void readXLSXFile(String strPath) throws IOException
+	{
+		InputStream ExcelFileToRead = new FileInputStream(strPath);//"C:/Book1.xlsx");
+		XSSFWorkbook  wb = new XSSFWorkbook(ExcelFileToRead);
+		
+		XSSFWorkbook test = new XSSFWorkbook(); 
+		
+		XSSFSheet sheet = wb.getSheetAt(0);
+		XSSFRow row; 
+		XSSFCell cell;
+ 
+		Iterator rows = sheet.rowIterator();
+		int i = 0;
+		int x = 0;
+		String strACT_KEY = null;
+		String strACT_NAME = null;
+		  
+		rows.next();
+		while (rows.hasNext())
+		{
+			
+			row=(XSSFRow) rows.next();
+			Iterator cells = row.cellIterator();
+			x=1;
+			
+			while (cells.hasNext())
+			{
+				cell=(XSSFCell) cells.next();
+				
+				if (cell.getCellType() == XSSFCell.CELL_TYPE_STRING)
+				{
+					
+					if(x == 1){
+						strACT_KEY = cell.getStringCellValue();
+					}else{
+						strACT_NAME = cell.getStringCellValue();
+					}
+				}
+				else if(cell.getCellType() == XSSFCell.CELL_TYPE_NUMERIC)
+				{
+					System.out.print(cell.getNumericCellValue()+" ");
+				}
+				else
+				{
+					//U Can Handel Boolean, Formula, Errors
+				}
+				x++;
+			}
+			System.out.println("No."+ i + " " + strACT_KEY + "            | " + strACT_NAME);
+			i++;
+		}
+	
+	}
+	
+	public static void writeXLSXFile() throws IOException {
+		
+		String excelFileName = "C:/Test.xlsx";//name of excel file
+ 
+		String sheetName = "Sheet1";//name of sheet
+ 
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet = wb.createSheet(sheetName) ;
+ 
+		//iterating r number of rows
+		for (int r=0;r < 5; r++ )
+		{
+			XSSFRow row = sheet.createRow(r);
+ 
+			//iterating c number of columns
+			for (int c=0;c < 5; c++ )
+			{
+				XSSFCell cell = row.createCell(c);
+	
+				cell.setCellValue("Cell "+r+" "+c);
+			}
+		}
+ 
+		FileOutputStream fileOut = new FileOutputStream(excelFileName);
+ 
+		//write this workbook to an Outputstream.
+		wb.write(fileOut);
+		fileOut.flush();
+		fileOut.close();
+	}
+	
+	
+	/**
+	* The main executable method to test displayFromExcel method.
+	*
+	* @param args
+	*/
+	public static void main (String[] args)
+	{
+		EARdataExcel poiExample = new EARdataExcel();
+		String         xlsPath    = "G:/Lentice/ISAT/SSE Project/Maintenance/Doc/ISAT-ERP-CGM-SAP Roles-Code-final.xlsx";
+//		 
+//		poiExample.displayFromExcel (xlsPath);
+		
+		HashMap[] hash = null;
+		
+		try {
+			readXLSXFile(xlsPath);
+//			hash = poiExample.readXLSXFileToHashMap(xlsPath);
+//			System.out.println("size : "+hash.length);
+//			
+//			for(int i =0;i < hash.length;i++){
+//				System.out.print(hash[i].get("ACT_KEY"));
+//				System.out.print(" | ");
+//				System.out.print(hash[i].get("ACT_NAME"));
+//				System.out.println();
+//			}
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+}

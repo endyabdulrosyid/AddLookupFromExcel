@@ -1,0 +1,191 @@
+package ltc.tsel.getdatafromexcel;
+
+/*
+ * created by Abdul Rosyid
+ * 02/04/2013
+ * abdulrosyid@live.com
+ */
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Properties;
+
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import Thor.API.Operations.tcITResourceInstanceOperationsIntf;
+import Thor.API.Operations.tcLookupOperationsIntf;
+import Thor.API.Operations.tcReconciliationOperationsIntf;
+import Thor.API.tcResultSet;
+
+import oracle.iam.platform.OIMClient;
+import oracle.iam.scheduler.vo.TaskSupport;
+
+public class ExcelToLookup extends TaskSupport{
+
+	private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
+    private long isSvrKey;
+    private tcITResourceInstanceOperationsIntf itObj;
+    private static OIMClient oimClient;
+    tcLookupOperationsIntf reconLookupIntf;
+    
+    private int _TotalReconCount;
+    private int _UpdateReconCount;
+    private int _FailedReconCount;
+    private ArrayList _failUsers;
+    
+    private String s_ITR_IdM = "";
+    private String s_FilePath = "";
+    private String s_Lookup = "";
+    private String s_Email_Server = "";
+    private String s_Recipients = "";
+    private Date d = new Date();
+	
+    public ExcelToLookup(){
+    	this._TotalReconCount = 0;
+        this._UpdateReconCount = 0;
+        this._FailedReconCount = 0;
+        this._failUsers = new ArrayList();
+    }
+    
+	@Override
+	public void execute(HashMap attrs) throws Exception {
+		// TODO Auto-generated method stub
+		System.out.println("[" + this.d.toString() + "] RECONCILIATION From Excel <IN-CRM:Application:> Excel to Lookup BEGIN TASK v.1.0");
+		try{
+			oimClient = new OIMClient();
+//          Db db = new Db();
+			this.reconLookupIntf = ((tcLookupOperationsIntf)oimClient.getService(tcLookupOperationsIntf.class));
+//          tcReconciliationOperationsIntf UTRecon = (tcReconciliationOperationsIntf)oimClient.getService(tcReconciliationOperationsIntf.class);
+          this.itObj = ((tcITResourceInstanceOperationsIntf)oimClient.getService(tcITResourceInstanceOperationsIntf.class));
+
+          System.out.println("[" + this.d.toString() + "] RECONCILIATION From Excel <IN-CRM:Application:> GETPARAMETER");
+          
+          if (attrs.get("File Path") != null) this.s_FilePath = attrs.get("File Path").toString();
+          if (attrs.get("Lookup") != null) this.s_Lookup = attrs.get("Lookup").toString();
+               
+          System.out.println("File Path : "+ this.s_FilePath);
+          System.out.println("Lookup : "+ this.s_Lookup);
+          System.out.println("======================================");
+          
+          System.out.println("remove lookup");
+          this.reconLookupIntf.removeLookupCode(s_Lookup);
+          System.out.println("add lookup");
+          this.reconLookupIntf.addLookupCode(s_Lookup);
+          
+          int i = 0;
+          try{
+        	  InputStream ExcelFileToRead = new FileInputStream(this.s_FilePath);//"C:/Book1.xlsx");
+      		  XSSFWorkbook  wb = new XSSFWorkbook(ExcelFileToRead);
+      		
+      		  XSSFWorkbook test = new XSSFWorkbook(); 
+      		
+      		  XSSFSheet sheet = wb.getSheetAt(0);
+      		  XSSFRow row; 
+      		  XSSFCell cell;
+       
+      		  Iterator rows = sheet.rowIterator();
+      		  
+      		  int x = 0;
+    		  String strACT_KEY = "";
+    		  String strACT_NAME = "";
+      		  
+      		  rows.next();
+      		  while (rows.hasNext())
+      		  {
+      			  	System.out.print("No. "+i);
+      			  	row=(XSSFRow) rows.next();
+	    			Iterator cells = row.cellIterator();
+	    			x=1;
+	    			
+	    			while (cells.hasNext())
+	    			{
+	    				cell=(XSSFCell) cells.next();
+	    				
+	    				if (cell.getCellType() == XSSFCell.CELL_TYPE_STRING)
+	    				{
+	    					System.out.print(" "+ cell.getStringCellValue()+" ");
+	    					System.out.print(" | ");
+	    					if(x == 1){
+	    						strACT_KEY = cell.getStringCellValue();
+	    					}else{
+	    						strACT_NAME = cell.getStringCellValue();
+	    					}
+	    				}
+	    				else if(cell.getCellType() == XSSFCell.CELL_TYPE_NUMERIC)
+	    				{
+	    					System.out.print(cell.getNumericCellValue()+" ");
+	    				}
+	    				else
+	    				{
+	    					//U Can Handel Boolean, Formula, Errors
+	    				}
+	    				x++;
+	    			}
+	    			System.out.println("No."+ i + " " + strACT_KEY + "            | " + strACT_NAME);
+	    			this.reconLookupIntf.addLookupValue(s_Lookup, strACT_KEY, strACT_NAME, "en", "US");
+	    			this._UpdateReconCount += 1;
+	    			i++;
+      		  }
+      		  
+          }catch (IOException ie) {
+			// TODO: handle exception
+        	  ie.printStackTrace();
+        	  System.out.println();
+              this._failUsers.add(i + " Failed :" + ie.getMessage());
+              this._FailedReconCount += 1;
+          }
+          
+          
+  		  System.out.println("[" + this.d.toString() + "] RECONCILIATION From Excel <IN-CRM:Application:> FINISH TASK V.1.0");
+  		  System.out.println("---------- ISAT IDM - User SAP R3 Reconcilaition Role End ----------");
+  		  
+          
+		}catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+	}
+
+	private final Hashtable getSvrProperties(tcITResourceInstanceOperationsIntf itObj, String itRes) throws Exception {
+        Hashtable map = new Hashtable();
+        map.put("IT Resources.Name", itRes);
+        tcResultSet set = itObj.findITResourceInstances(map);
+        this.isSvrKey = set.getLongValue("IT Resources.Key");
+        set = itObj.getITResourceInstanceParameters(this.isSvrKey);
+        map.clear();
+        map.put("svr_key", 
+          Long.valueOf(this.isSvrKey));
+        for (int i = 0; i < set.getRowCount(); i++) {
+          set.goToRow(i);
+          String s3 = set.getStringValue("IT Resources Type Parameter.Name");
+          String s4 = set
+            .getStringValue("IT Resources Type Parameter Value.Value");
+          map.put(s3, s4);
+        }
+        return map;
+    }
+    
+    
+	@Override
+	public HashMap getAttributes() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setAttributes() {
+		// TODO Auto-generated method stub
+		
+	}
+
+}
